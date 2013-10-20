@@ -2,103 +2,25 @@
   <head>
     <title>Navigation Extension Options</title>
     <style type="text/css" media="screen">
-body {
-    margin-top :  20px;
-    margin-left: 10%;
-    background: -webkit-gradient(linear, 0% 0%, 20% 100%,
-                                 from(silver), to(white));
-}
+    body {
+      margin-top :  20px;
+      margin-left: 10%;
+    }
     </style>
-<script type="text/javascript">
-function restore(){
-   FunctionManager.restore();
-   HitaHintManager.restore();
-   SiteManager.restore();
-}
-
-// for key config
-var FunctionManager = {
-   save: function(){
-      localStorage["search"] = search.checked;
-      localStorage["hitahint"] = hitahint.checked;
-      localStorage["other"] = other.checked;
-   },
-   restore: function(){
-      if (!localStorage["search"])
-         localStorage["search"] = true;
-      if (!localStorage["hitahint"])
-         localStorage["hitahint"] = true;
-      if (!localStorage["other"])
-         localStorage["other"] = true;
-
-      search.checked   = localStorage["search"]   =="true"?true:false;
-      hitahint.checked = localStorage["hitahint"] =="true"?true:false;
-      other.checked    = localStorage["other"]    =="true"?true:false;
-   },
-};
-
-// for hit a hint
-var HitaHintManager = {
-   save: function(){
-      if (hitahintkeys.value)
-         localStorage["hitahintkeys"] = hitahintkeys.value;
-   },
-   restore: function(){
-      if (!localStorage["hitahintkeys"])
-         localStorage["hitahintkeys"] = "asdfjkl";
-      hitahintkeys.value = localStorage["hitahintkeys"];
-   },
-};
-
-// for disabled sites
-var SiteManager = {
-   save: function(){
-      var sites = "";
-      for (var i=0 ; i < disabled_sites.length ; i++)
-         sites += disabled_sites[i].value+",";
-      localStorage["disabled_sites"] = sites;
-   },
-   restore: function(){
-      var data = localStorage["disabled_sites"];
-      if (!data)
-         return;
-      var sites = data.split(",").slice(0,-1);
-      for (var i=0 ; i < sites.length ; i++)
-         this._append(sites[i]);
-   },
-   add: function(){
-      if (disabled_sites_adder.value == "")
-         return;
-      this._append(disabled_sites_adder.value);
-   },
-   del: function(){
-      for (var i=0; i < disabled_sites.length ; i++)
-         if (disabled_sites[i].selected)
-            disabled_sites.removeChild(disabled_sites[i--]);
-   },
-   _append: function(site){
-      var option = document.createElement("option");
-      option.innerText = site;
-      option.value = site;
-      disabled_sites.appendChild(option);
-   },
-};
-</script>
+<script src="options.js" type="text/javascript"></script>
 </head>
-
-<body onload="restore()">
   <h1>Functions</h1>
   <table>
-    <tr>
-      <td><input type='checkbox' id='search' onclick="FunctionManager.save()" /></td>
+  <tr>
+      <td><input type='checkbox' id='search'/></td>
       <td>Enable Migemo Link Search</td>
     </tr>
     <tr>
-      <td><input type='checkbox' id='hitahint' onclick="FunctionManager.save()" /></td>
+      <td><input type='checkbox' id='hitahint'/></td>
       <td>Enable Hit-a-Hint</td>
     </tr>
     <tr>
-      <td><input type='checkbox' id='other' onclick="FunctionManager.save()" /></td>
+      <td><input type='checkbox' id='other'/></td>
       <td>Enable Other Key Bindings</td>
     </tr>
   </table>
@@ -108,10 +30,10 @@ var SiteManager = {
   <h1>Disabled Sites</h1>
   <p>List URLs where this extension is disabled. You can use regular expressions here.</p>
   <input id="disabled_sites_adder" style="width: 400px;" />
-  <input type="button" value="Add" onclick="SiteManager.add()"/>
+  <input type="button" value="Add"/>
   <br/>
   <select multiple id="disabled_sites" style="width: 400px; height: 200px;"></select>
-  <input type="button" value="Delete" onclick="SiteManager.del()"/>
-  <input type="button" value="save" onclick="SiteManager.save()"/>
+  <input type="button" value="Delete" />
+  <input type="button" value="save" />
 </body>
 </html>
