@@ -63,7 +63,7 @@ function click(target, ctrlKey, altKey, shiftKey, metaKey) {
     if ($.inArray(target.tagName, objects) != -1) {
         target.focus();
     } else {
-        var evt = document.createEvent('MouseEvents');
+        var evt = document.createEvent("MouseEvents");
         evt.initMouseEvent("click", true, true, window,
             0, 0, 0, 0, 0,
             ctrlKey, altKey, shiftKey, metaKey, 0, null);
@@ -100,7 +100,7 @@ function makeCenter(node) {
 }
 
 function addClass(node, classname) {
-    if (node.className == "") {
+    if (node.className === "") {
         node.className = classname;
         return true;
     } else {
@@ -191,9 +191,9 @@ var HitAHintMode = function() {
             "textarea:visible,select:visible," +
             "img[onclick]:visible,button:visible";
 
-        var frames = d.querySelectorAll('iframe, frame');
+        var frames = d.querySelectorAll("iframe, frame");
         var docs = [d].concat($.map(frames, function(fs) {
-            return fs.contentDocument
+            return fs.contentDocument;
         }));
 
         for (var idx = 0, j = 0; idx < docs.length; idx++) {
@@ -472,15 +472,15 @@ function start(e) {
     }
 }
 
-var frames = d.querySelectorAll('iframe, frame');
+var frames = d.querySelectorAll("iframe, frame");
 var docs = [d].concat($.map(frames, function(f) {
-    return f.contentDocument
+    return f.contentDocument;
 }));
 $.map(docs, function(d) {
-    d.addEventListener('keydown', start)
+    d.addEventListener("keydown", start);
 });
 $.map(frames, function(f) {
-    f.addEventListener('load', function(e) {
-        e.target.contentDocument.addEventListener('keydown', start);
-    })
+    f.addEventListener("load", function(e) {
+        e.target.contentDocument.addEventListener("keydown", start);
+    });
 });
