@@ -132,12 +132,12 @@ var HitAHintMode = function() {
     var self = this;
 
     this.candidateNodes = {};
-    this.panel = $("<div id='chrome_hitahintpanel'" +
+    var panel = $("<div id='chrome_hitahintpanel'" +
         "style='opacity:0'></div>");
     this.input = $("<input id='chrome_hitahintinput' type='text'></input>");
-    this.panel.css("display", "none");
-    this.panel.append(this.input);
-    $("body").append(this.panel);
+    panel.css("display", "none");
+    panel.append(this.input);
+    $("body").append(panel);
     this.input.keyup(function(e) {
         e.preventDefault();
         if (e.keyCode == KEY.ESC) {
@@ -193,7 +193,11 @@ var HitAHintMode = function() {
 
         var frames = d.querySelectorAll("iframe, frame");
         var docs = [d].concat($.map(frames, function(fs) {
-            return fs.contentDocument;
+            try {
+                return fs.contentDocument;
+            } catch (error) {
+                console.error(error);
+            }
         }));
 
         for (var idx = 0, j = 0; idx < docs.length; idx++) {
@@ -237,6 +241,7 @@ var HitAHintMode = function() {
             $("#chrome_hintswindow > *").removeClass("chrome_not_candidate");
         }, 0);
     };
+
     this.hideHint = function() {
         $("#chrome_hintswindow > *").css("opacity", "0");
         setTimeout(function() {
@@ -256,8 +261,8 @@ var HitAHintMode = function() {
     };
 
     this.init = function() {
-        this.panel.css("display", "block");
-        this.panel.css("opacity", "0.9");
+        panel.css("display", "block");
+        panel.css("opacity", "0.9");
         this.input[0].focus();
         this.showHint();
     }
@@ -266,13 +271,13 @@ var HitAHintMode = function() {
         this.input[0].value = "";
         this.input[0].blur();
         document.body.focus();
-        this.panel.css("opacity", "0");
-        var tmp = this.panel;
+        panel.css("opacity", "0");
+        var tmp = panel;
         setTimeout(function() {
             tmp.css("display", "none")
         }, 100);
         this.hideHint();
-    }
+    };
 };
 
 var LinkSearchMode = function() {
