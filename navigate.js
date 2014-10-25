@@ -100,6 +100,7 @@ function makeCenter(node) {
 }
 
 function addClass(node, classname) {
+    var classes;
     if (node.className === "") {
         node.className = classname;
         return true;
@@ -115,10 +116,10 @@ function addClass(node, classname) {
 }
 
 function removeClass(node, classname) {
-    classes = node.className.split(" ");
-    pos = classes.indexOf(classname);
+    var classes = node.className.split(" "),
+        pos = classes.indexOf(classname);
     if (pos != -1) {
-        newclasses = classes.slice(0, pos).concat(classes.slice(pos + 1));
+        var newclasses = classes.slice(0, pos).concat(classes.slice(pos + 1));
         node.className = "";
         for (var i = 0; i < newclasses.length; i++) {
             node.className += newclasses[i] + " ";
@@ -151,17 +152,17 @@ var HitAHintMode = function() {
         }
 
         for (var hintkey in self.candidateNodes) {
-            hint = self.candidateNodes[hintkey].hint;
-            if (this.value == "" || hintkey.indexOf(this.value) == 0) {
+            var hint = self.candidateNodes[hintkey].hint;
+            if (this.value === "" || hintkey.indexOf(this.value) === 0) {
                 removeClass(hint, "chrome_not_candidate");
             } else {
                 addClass(hint, "chrome_not_candidate");
             }
         }
-        if (this.value == "" || self.candidateNodes[this.value]) {
-            self.input.css("backgroundColor", "white");
+        if (this.value === "" || self.candidateNodes[this.value]) {
+            input.css("backgroundColor", "white");
         } else {
-            self.input.css("backgroundColor", "red");
+            input.css("backgroundColor", "red");
         }
     });
 
