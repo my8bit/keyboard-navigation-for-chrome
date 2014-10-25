@@ -41,7 +41,7 @@ var usechars;
 
 // load connection
 var connection = chrome.extension.connect();
-connection.onMessage.addListener(function(info, con) {
+connection.onMessage.addListener(function(info) {
     search_enable = info.search == "false" ? false : true;
     hitahint_enable = info.hitahint == "false" ? false : true;
     other_enable = info.other == "false" ? false : true;
@@ -135,14 +135,18 @@ var HitAHintMode = function() {
         input = $("<input id='chrome_hitahintinput' type='text'></input>"),
         div = $("<div></div>").attr("id", "chrome_hintswindow");
 
+    this.panel = panel;
+    this.input = input;
+
     $("body").append(div);
-    this.hintsdiv = div[0];
+    $("body").append(panel);
+
+    //this.hintsdiv = div[0];
 
     panel.css("display", "none");
     panel.append(input);
 
     this.candidateNodes = {};
-    $("body").append(panel);
 
     input.keyup(function(e) {
         e.preventDefault();
@@ -152,12 +156,19 @@ var HitAHintMode = function() {
         }
 
         for (var hintkey in self.candidateNodes) {
-            var hint = self.candidateNodes[hintkey].hint;
+            var hint = $(self.candidateNodes[hintkey].hint);
             if (this.value === "" || hintkey.indexOf(this.value) === 0) {
-                removeClass(hint, "chrome_not_candidate");
+                hint.removeClass("chrome_not_candidate");
             } else {
-                addClass(hint, "chrome_not_candidate");
+                hint.addClass("chrome_not_candidate");
             }
+            /*
+            if (this.value === "" || hintkey.indexOf(this.value) === 0) {
+                //removeClass(hint, "chrome_not_candidate");
+            } else {
+                //addClass(hint, "chrome_not_candidate");
+            }
+            */
         }
         if (this.value === "" || self.candidateNodes[this.value]) {
             input.css("backgroundColor", "white");
@@ -173,7 +184,7 @@ var HitAHintMode = function() {
             self.finish();
             return;
         }
-
+        var target;
         if (e.keyCode == KEY.SEMICOLON && self.candidateNodes[this.value]) {
             target = self.candidateNodes[this.value].node;
             self.finish();
@@ -194,51 +205,56 @@ var HitAHintMode = function() {
             "textarea:visible,select:visible," +
             "img[onclick]:visible,button:visible";
 
-        var frames = d.querySelectorAll("iframe, frame");
-        var docs = [d].concat($.map(frames, function(fs) {
-            try {
-                return fs.contentDocument;
-            } catch (error) {
-                console.error(error);
-            }
-        }));
+        var frames = d.querySelectorAll("iframe, frame"),
+            docs = [d].concat($.map(frames, function(fs) {
+                try {
+                    return fs.contentDocument;
+                } catch (error) {
+                    console.error(error);
+                }
+            })),
+            self = this;
 
         for (var idx = 0, j = 0; idx < docs.length; idx++) {
-            var allNodes = $.makeArray($(targetSelector, docs[idx]));
-            var frameOffset = {
-                top: 0,
-                left: 0
-            };
+            var allNodes = $.makeArray($(targetSelector, docs[idx])),
+                frameOffset = {
+                    top: 0,
+                    left: 0
+                };
+
             if (idx !== 0) {
                 frameOffset = frames[idx - 1].getBoundingClientRect();
             }
 
             var df = d.createDocumentFragment();
-            for (var i = 0; i < allNodes.length; i++) {
-                var node = allNodes[i];
-                var cr = node.getBoundingClientRect();
+
+            allNodes.forEach(function(el) {
+                var node = el,
+                    cr = node.getBoundingClientRect();
 
                 if (node.id.indexOf("chrome_") !== 0 && isInArea(cr, frames[idx - 1])) {
-                    tag = this.num2string(j++);
-                    span = docs[idx].createElement("span");
+                    var tag = self.num2string(j++),
+                        span = docs[idx].createElement("span");
                     span.innerText = tag;
 
                     var left = (window.pageXOffset + cr.left +
-                        (idx ? frameOffset.left - docs[idx].body.scrollLeft : 0));
-                    var top = (window.pageYOffset + cr.top +
-                        (idx ? frameOffset.top - docs[idx].body.scrollTop : 0));
+                            (idx ? frameOffset.left - docs[idx].body.scrollLeft : 0)),
+                        top = (window.pageYOffset + cr.top +
+                            (idx ? frameOffset.top - docs[idx].body.scrollTop : 0));
 
                     span.style.left = "" + (left - 8) + "px";
                     span.style.top = "" + (top - 8) + "px";
                     span.className = "chrome_hint chrome_not_candidate";
                     df.appendChild(span);
-                    this.candidateNodes[tag] = {
+                    self.candidateNodes[tag] = {
                         "hint": span,
                         "node": node
                     };
                 }
-            }
-            this.hintsdiv.appendChild(df);
+            });
+
+            //this.hintsdiv.appendChild(df);
+            div.append(df);
         }
         setTimeout(function() {
             $("#chrome_hintswindow > *").removeClass("chrome_not_candidate");
@@ -253,20 +269,20 @@ var HitAHintMode = function() {
     };
 
     this.num2string = function(num) {
-        n = usechars.length;
-        table = "0123456789abcdefghijklmnopqrstuvwxyz".slice(0, n);
-        tmp = num.toString(n);
-        result = "";
+        var n = usechars.length,
+            table = "0123456789abcdefghijklmnopqrstuvwxyz".slice(0, n),
+            tmp = num.toString(n),
+            result = "";
         for (var i = 0; i < tmp.length; i++) {
-            result += usechars[table.indexOf(tmp[i])]
+            result += usechars[table.indexOf(tmp[i])];
         }
         return result;
     };
 
     this.init = function() {
-        panel.css("display", "block");
-        panel.css("opacity", "0.9");
-        input[0].focus();
+        this.panel.css("display", "block");
+        this.panel.css("opacity", "0.9");
+        this.input.focus();
         this.showHint();
     };
 
@@ -311,7 +327,7 @@ var LinkSearchMode = function() {
         self.hideLinks();
         self.candidateNodes = [];
 
-        regexp = new RegExp(migemo.query(this.value), "i");
+        var regexp = new RegExp(migemo.query(this.value), "i");
         for (var i = 0; i < self.allNodes.length; i++) {
             var node = self.allNodes[i];
             if (node.innerText.search(regexp) != -1) {
@@ -322,10 +338,12 @@ var LinkSearchMode = function() {
             self.input.css("backgroundColor", "white");
 
             self.selectedNodeIdx = 0;
-            addClass(self.candidateNodes[0], "chrome_search_selected");
+            $(self.candidateNodes[0]).addClass("chrome_search_selected");
+            //addClass(self.candidateNodes[0], "chrome_search_selected");
             //	     makeCenter(self.candidateNodes[0]);
-            for (var i = 1; i < self.candidateNodes.length; i++) {
-                addClass(self.candidateNodes[i], "chrome_search_candidate");
+            for (var j = 1; j < self.candidateNodes.length; j++) {
+                $(self.candidateNodes[j]).addClass("chrome_search_selected");
+                //addClass(self.candidateNodes[i], "chrome_search_candidate");
             }
         } else {
             self.input.css("backgroundColor", "red");
@@ -335,7 +353,7 @@ var LinkSearchMode = function() {
     this.input.keydown(function(e) {
         switch (e.keyCode) {
             case KEY.SEMICOLON:
-                if (self.selectedNodeIdx == undefined) {
+                if (self.selectedNodeIdx === undefined) {
                     return;
                 }
                 self.candidateNodes[self.selectedNodeIdx].focus();
@@ -343,7 +361,7 @@ var LinkSearchMode = function() {
                 e.preventDefault();
                 break;
             case KEY.ENTER:
-                if (self.selectedNodeIdx == undefined) {
+                if (self.selectedNodeIdx === undefined) {
                     return;
                 }
                 click(self.candidateNodes[self.selectedNodeIdx],
@@ -354,10 +372,9 @@ var LinkSearchMode = function() {
             case KEY.G:
                 if (e.ctrlKey) {
                     e.preventDefault();
-                    if (self.selectedNodeIdx == undefined) {
+                    if (typeof self.selectedNodeIdx == "undefined") {
                         return;
                     }
-
                     removeClass(self.candidateNodes[self.selectedNodeIdx],
                         "chrome_search_selected");
                     if (!e.shiftKey) {
@@ -368,8 +385,9 @@ var LinkSearchMode = function() {
                         self.selectedNodeIdx += self.candidateNodes.length;
                         self.selectedNodeIdx %= self.candidateNodes.length;
                     }
-                    new_target = self.candidateNodes[self.selectedNodeIdx];
-                    addClass(new_target, "chrome_search_selected");
+                    var new_target = self.candidateNodes[self.selectedNodeIdx];
+                    $(new_target).addClass("chrome_search_selected");
+                    //addClass(new_target, "chrome_search_selected");
                     if (!isInArea(new_target.getBoundingClientRect())) {
                         makeCenter(new_target);
                     }
