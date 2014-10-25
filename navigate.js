@@ -27,9 +27,9 @@ const KEY = {
     Z: 90,
     X: 88,
     SEMICOLON: 186,
-    COMMA: 113,
-    PERIOD: 115,
-    SLASH: 115,
+    COMMA: 119, //F8
+    PERIOD: 120, //F9
+    SLASH: 121, //F10
 };
 var d = document;
 
