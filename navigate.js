@@ -129,14 +129,18 @@ function removeClass(node, classname) {
 }
 
 var HitAHintMode = function() {
-    var self = this;
+    var self = this,
+        panel = $("<div id='chrome_hitahintpanel' style='opacity:0'></div>"),
+        input = $("<input id='chrome_hitahintinput' type='text'></input>"),
+        div = $("<div></div>").attr("id", "chrome_hintswindow");
 
-    this.candidateNodes = {};
-    var panel = $("<div id='chrome_hitahintpanel'" +
-        "style='opacity:0'></div>");
-    var input = $("<input id='chrome_hitahintinput' type='text'></input>");
+    $("body").append(div);
+    this.hintsdiv = div[0];
+
     panel.css("display", "none");
     panel.append(input);
+
+    this.candidateNodes = {};
     $("body").append(panel);
 
     input.keyup(function(e) {
@@ -146,7 +150,7 @@ var HitAHintMode = function() {
             return;
         }
 
-        for (hintkey in self.candidateNodes) {
+        for (var hintkey in self.candidateNodes) {
             hint = self.candidateNodes[hintkey].hint;
             if (this.value == "" || hintkey.indexOf(this.value) == 0) {
                 removeClass(hint, "chrome_not_candidate");
@@ -184,10 +188,6 @@ var HitAHintMode = function() {
         }
     });
 
-    var div = $("<div></div>").attr("id", "chrome_hintswindow");
-    $("body").append(div);
-    this.hintsdiv = div[0];
-
     this.showHint = function() {
         const targetSelector = "a[href]:visible,input[type!=hidden]:visible," +
             "textarea:visible,select:visible," +
@@ -208,7 +208,7 @@ var HitAHintMode = function() {
                 top: 0,
                 left: 0
             };
-            if (idx != 0) {
+            if (idx !== 0) {
                 frameOffset = frames[idx - 1].getBoundingClientRect();
             }
 
@@ -217,7 +217,7 @@ var HitAHintMode = function() {
                 var node = allNodes[i];
                 var cr = node.getBoundingClientRect();
 
-                if (node.id.indexOf("chrome_") != 0 && isInArea(cr, frames[idx - 1])) {
+                if (node.id.indexOf("chrome_") !== 0 && isInArea(cr, frames[idx - 1])) {
                     tag = this.num2string(j++);
                     span = docs[idx].createElement("span");
                     span.innerText = tag;
@@ -267,7 +267,8 @@ var HitAHintMode = function() {
         panel.css("opacity", "0.9");
         input[0].focus();
         this.showHint();
-    }
+    };
+
     this.finish = function() {
         mode = undefined;
         input[0].value = "";
@@ -276,7 +277,7 @@ var HitAHintMode = function() {
         panel.css("opacity", "0");
         var tmp = panel;
         setTimeout(function() {
-            tmp.css("display", "none")
+            tmp.css("display", "none");
         }, 100);
         this.hideHint();
     };
