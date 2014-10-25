@@ -134,11 +134,12 @@ var HitAHintMode = function() {
     this.candidateNodes = {};
     var panel = $("<div id='chrome_hitahintpanel'" +
         "style='opacity:0'></div>");
-    this.input = $("<input id='chrome_hitahintinput' type='text'></input>");
+    var input = $("<input id='chrome_hitahintinput' type='text'></input>");
     panel.css("display", "none");
-    panel.append(this.input);
+    panel.append(input);
     $("body").append(panel);
-    this.input.keyup(function(e) {
+
+    input.keyup(function(e) {
         e.preventDefault();
         if (e.keyCode == KEY.ESC) {
             self.finish();
@@ -159,7 +160,8 @@ var HitAHintMode = function() {
             self.input.css("backgroundColor", "red");
         }
     });
-    this.input.keydown(function(e) {
+
+    input.keydown(function(e) {
         if (e.keyCode == KEY.COMMA) {
             e.preventDefault();
             e.stopPropagation();
@@ -263,13 +265,13 @@ var HitAHintMode = function() {
     this.init = function() {
         panel.css("display", "block");
         panel.css("opacity", "0.9");
-        this.input[0].focus();
+        input[0].focus();
         this.showHint();
     }
     this.finish = function() {
         mode = undefined;
-        this.input[0].value = "";
-        this.input[0].blur();
+        input[0].value = "";
+        input[0].blur();
         document.body.focus();
         panel.css("opacity", "0");
         var tmp = panel;
