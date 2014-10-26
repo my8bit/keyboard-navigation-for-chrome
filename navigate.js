@@ -201,60 +201,72 @@ var HitAHintMode = function() {
     });
 
     this.showHint = function() {
-        const targetSelector = "a[href]:visible,input[type!=hidden]:visible," +
-            "textarea:visible,select:visible," +
-            "img[onclick]:visible,button:visible";
+        const targetSelector = ["a[href]:visible",
+            "input[type!=hidden]:visible",
+            "textarea:visible",
+            "select:visible",
+            "img[onclick]:visible",
+            "button:visible"
+        ].join();
 
-        var frames = d.querySelectorAll("iframe, frame"),
-            docs = [d].concat($.map(frames, function(fs) {
+        var frames = $("body").find("iframe, frame").map(function(idx, el) {
                 try {
-                    return fs.contentDocument;
+                    return $(el).contents();
                 } catch (error) {
                     console.error(error);
                 }
-            })),
+            }),
+            docs = [document].concat(frames),
             self = this;
 
         for (var idx = 0, j = 0; idx < docs.length; idx++) {
-            var allNodes = $.makeArray($(targetSelector, docs[idx])),
-                frameOffset = {
+            var allNodes = $.makeArray($(targetSelector, docs[idx]));
+            var frameOffset = (idx !== 0) ?
+                frames[idx - 1][0].body.getBoundingClientRect() : {
                     top: 0,
                     left: 0
                 };
+            var df = document.createDocumentFragment();
 
-            if (idx !== 0) {
-                frameOffset = frames[idx - 1].getBoundingClientRect();
-            }
-
-            var df = d.createDocumentFragment();
-
-            allNodes.forEach(function(el) {
-                var node = el,
-                    cr = node.getBoundingClientRect();
-
-                if (node.id.indexOf("chrome_") !== 0 && isInArea(cr, frames[idx - 1])) {
-                    var tag = self.num2string(j++),
-                        span = docs[idx].createElement("span");
-                    span.innerText = tag;
-
-                    var left = (window.pageXOffset + cr.left +
-                            (idx ? frameOffset.left - docs[idx].body.scrollLeft : 0)),
-                        top = (window.pageYOffset + cr.top +
-                            (idx ? frameOffset.top - docs[idx].body.scrollTop : 0));
-
-                    span.style.left = "" + (left - 8) + "px";
-                    span.style.top = "" + (top - 8) + "px";
-                    span.className = "chrome_hint chrome_not_candidate";
-                    df.appendChild(span);
-                    self.candidateNodes[tag] = {
-                        "hint": span,
-                        "node": node
-                    };
-                }
-            });
-
-            //this.hintsdiv.appendChild(df);
+            allNodes.forEach(showHints);
             div.append(df);
+        }
+        /*
+        docs.forEach(function(el, idx) {
+            var allNodes = $(el).find(targetSelector),
+                frameOffset = (idx !== 0) ?
+                frames[idx - 1][0].body.getBoundingClientRect() : {
+                    top: 0,
+                    left: 0
+                },
+                df = document.createDocumentFragment();
+            allNodes.each(showHints);
+            div.append(df);
+        });
+*/
+        function showHints(hintedElement) {
+            var node = hintedElement,
+                cr = node.getBoundingClientRect();
+
+            if (node.id.indexOf("chrome_") !== 0 && isInArea(cr, frames[idx - 1])) {
+                var tag = self.num2string(j++),
+                    span = docs[idx].createElement("span");
+                span.innerText = tag;
+
+                var left = (window.pageXOffset + cr.left +
+                        (idx ? frameOffset.left - docs[idx].body.scrollLeft : 0)),
+                    top = (window.pageYOffset + cr.top +
+                        (idx ? frameOffset.top - docs[idx].body.scrollTop : 0));
+
+                span.style.left = "" + (left - 8) + "px";
+                span.style.top = "" + (top - 8) + "px";
+                span.className = "chrome_hint chrome_not_candidate";
+                df.appendChild(span);
+                self.candidateNodes[tag] = {
+                    "hint": span,
+                    "node": node
+                };
+            }
         }
         setTimeout(function() {
             $("#chrome_hintswindow > *").removeClass("chrome_not_candidate");
@@ -307,9 +319,8 @@ var LinkSearchMode = function() {
     this.candidateNodes = [];
     this.selectedNodeIdx = undefined;
     this.previousString = "";
-    this.panel = $("<div id='chrome_linksearchpanel'" +
-        "style='opacity:0'></div>");
-    this.input = $("<input id='chrome_linksearchinput' type='text'></input>")
+    this.panel = $("<div id='chrome_linksearchpanel' style='opacity:0'></div>");
+    this.input = $("<input id='chrome_linksearchinput' type='text'></input>");
     this.panel.css("display", "none");
     this.panel.append(this.input);
     $("body").append(this.panel);
@@ -339,11 +350,8 @@ var LinkSearchMode = function() {
 
             self.selectedNodeIdx = 0;
             $(self.candidateNodes[0]).addClass("chrome_search_selected");
-            //addClass(self.candidateNodes[0], "chrome_search_selected");
-            //	     makeCenter(self.candidateNodes[0]);
             for (var j = 1; j < self.candidateNodes.length; j++) {
                 $(self.candidateNodes[j]).addClass("chrome_search_selected");
-                //addClass(self.candidateNodes[i], "chrome_search_candidate");
             }
         } else {
             self.input.css("backgroundColor", "red");
