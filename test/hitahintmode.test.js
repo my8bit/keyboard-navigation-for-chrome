@@ -1,7 +1,6 @@
-/*
-var assert = require("assert");
+/*var assert = require("assert");
 describe("HitAHintMode module testing", function() {
-    var HitAHintMode = require("../hitahintmode.js"),
+    var HitAHintMode = require("../src/hitahintmode.js"),
         hint,
         jqueryMock = {
             attr: function() {
@@ -74,5 +73,4 @@ describe("HitAHintMode module testing", function() {
             //assert.strictEqual(hint.num2string(0), "a");
         });
     });
-});
-*/
+});*/

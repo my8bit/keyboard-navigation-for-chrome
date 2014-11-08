@@ -5,9 +5,9 @@
   "browser": true,
   "esnext": true,
   "globals": { 
-    "console": true, //debugg variables
+    "chrome": true, "console": true, //debugg variables
     "require": true, "requirejs": true, "define": true, //requirejs variables
-    "process": true, "module": true, "exports": true, "__dirname": true, //Node.js internal
+    "GLOBAL": true, "process": true, "module": true, "exports": true, "__dirname": true, //Node.js internal
     "$": true,  //jQuery
     "describe": true, "beforeEach": true, "afterEach": true, "it": true //Mocha, Chai
   },

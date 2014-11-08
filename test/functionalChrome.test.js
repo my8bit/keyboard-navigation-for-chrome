@@ -6,14 +6,16 @@ var crx = require("./testHelper.js").getDecodedCrx(),
     assert = require("chai").assert;
 
 
-describe("My webdriverjs tests", function() {
+describe("Hit a hint mode and link search mode", function() {
 
     this.timeout(99999999);
     var client = {};
     var KEYS = {
         "F8": "\uE038",
+        "F9": "\uE039",
+        "F10": "\uE03A",
         "a": "\u0061",
-        "Enter": "\u000D"
+        "Enter": "\uE007"
     };
 
     beforeEach(function(done) {
@@ -30,23 +32,31 @@ describe("My webdriverjs tests", function() {
         client = webdriverjs.remote(options);
         client.init(done);
     });
-    /*    it('Click DOGE image test', function(done) {
+
+    it("Should get exist of hit input on page but invisible", function(done) {
         client
-            .url('http://localhost:8765/index.html')
-            .on("load", function(e, r) {
-                console.log(e);
-                console.log(r);
+            .url("http://localhost:8765/index.html")
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are no hintinput in page");
             })
-            .click("#doge", function(err, res) {
-                assert(err === undefined);
-            })
-            .getText("h1", function(err, text) {
-                assert(text === "Doge");
+            .isVisible("#chrome_hitahintinput", function(err, isVisible) {
+                assert(isVisible === false, "There are visible");
             })
             .call(done);
     });
-*/
-    /*
+
+    it("Should get hintswindow", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .isExisting("#chrome_hintswindow", function(err, isExisting) {
+                assert(isExisting === true, "There are one chrome_hintswindow");
+            })
+            .isVisible("#chrome_hintswindow", function(err, isVisible) {
+                assert(isVisible === false);
+            })
+            .call(done);
+    });
+
     it("Should get 3 hints (2 links, 1 hintinput) on page", function(done) {
         client
             .url("http://localhost:8765/index.html")
@@ -60,25 +70,67 @@ describe("My webdriverjs tests", function() {
                 assert(res.state === "success", "There are one hintinput");
             })
             .call(done);
-    });*/
-    it("Should get 3 hints and then hide it", function(done) {
+    });
+
+    it("Should get 3 hints and 1 input and then hide it", function(done) {
         client
             .url("http://localhost:8765/index.html")
             .keys(KEYS.F8, function() {})
             .elements(".chrome_hint", function(err, res) {
-                //console.log(res);
                 assert(res.value.length === 3, "There are three hints on link");
             })
-            .element("#chrome_hitahintinput", function(err, res) {
-                assert(res.state === "success", "There are one hintinput");
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
             })
             .keys(KEYS.F8, function() {})
-            .elements(".chrome_hint", function(err, res) {
-                assert(res.value.length === 0, "Hints hides");
+            .isExisting(".chrome_hint", function(err, isExisting) {
+                assert(isExisting === false);
             })
-            .element("#chrome_hitahintinput", function(err, res) {
-                console.log(res);
-                //assert(res.value.length === 0, "Hintinput hides");
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true);
+            })
+            .isVisible("#chrome_hitahintinput", function(err, isVisible) {
+                assert(isVisible === false);
+            })
+            .call(done);
+    });
+
+    it("Should get 1 hint and 1 input and then hide it", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .scroll("#doge2")
+            .keys(KEYS.F8, function() {})
+            .elements(".chrome_hint", function(err, res) {
+                assert(res.value.length === 1, "There are three hints on link");
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
+            })
+            .keys(KEYS.F8, function() {})
+            .isExisting(".chrome_hint", function(err, isExisting) {
+                assert(isExisting === false);
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true);
+            })
+            .isVisible("#chrome_hitahintinput", function(err, isVisible) {
+                assert(isVisible === false);
+            })
+            .call(done);
+    });
+
+    it("Should follow the scroll hit link", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .scroll("#doge2")
+            .keys(KEYS.F8, function() {})
+            .elements(".chrome_hint", function(err, res) {
+                assert(res.value.length === 1, "There are three hints on link");
+            })
+            .keys(KEYS.a, function() {})
+            .keys(KEYS.Enter, function() {})
+            .getText("h1", function(err, text) {
+                assert(text === "Doge2");
             })
             .call(done);
     });
@@ -88,12 +140,66 @@ describe("My webdriverjs tests", function() {
             .url("http://localhost:8765/index.html")
             .keys(KEYS.F8, function() {})
             .keys(KEYS.a, function() {})
-        //.pause(2000)
-        .keys(KEYS.Enter, function() {})
-        //.pause(2000)
-        .getText("h1", function(err, text) {
-            assert(text === "Doge");
-        })
+            .keys(KEYS.Enter, function() {})
+            .getText("h1", function(err, text) {
+                assert(text === "Doge");
+            })
+            .call(done);
+    });
+
+    it("Should find and follow the hit link", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .keys(KEYS.F9, function() {})
+            .keys("link to", function() {})
+            .keys(KEYS.Enter, function() {})
+            .getText("h1", function(err, text) {
+                assert(text === "Doge");
+            })
+            .call(done);
+    });
+
+    it("Should be white. Hitahint", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .keys(KEYS.F8, function() {})
+            .keys("a", function() {})
+            .getCssProperty("#chrome_hitahintinput", "backgroundColor", function(err, res) {
+                assert(res.parsed.hex === "#ffffff", "The color isn\'t white");
+            })
+            .call(done);
+    });
+
+    it("Should be red. Hitahint", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .keys(KEYS.F8, function() {})
+            .keys("ab", function() {})
+            .getCssProperty("#chrome_hitahintinput", "backgroundColor", function(err, res) {
+                assert(res.parsed.hex === "#ff0000", "The color isn\'t red");
+            })
+            .call(done);
+    });
+
+    it("Should be white. Linksearch", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .keys(KEYS.F9, function() {})
+            .keys("link to", function() {})
+            .getCssProperty("#chrome_linksearchinput", "backgroundColor", function(err, res) {
+                assert(res.parsed.hex === "#ffffff", "The color isn\'t white");
+            })
+            .call(done);
+    });
+
+    it("Should be red. Linksearch", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .keys(KEYS.F9, function() {})
+            .keys("abrvalg", function() {})
+            .getCssProperty("#chrome_linksearchinput", "backgroundColor", function(err, res) {
+                assert(res.parsed.hex === "#ff0000", "The color isn\'t red");
+            })
             .call(done);
     });
 

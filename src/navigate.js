@@ -31,13 +31,13 @@ const KEY = {
     PERIOD: 120, //F9
     SLASH: 121, //F10
 };
-var d = document;
 
-var search_enable;
-var hitahint_enable;
-var other_enable;
-var sites;
-var usechars;
+var search_enable,
+    hitahint_enable,
+    other_enable,
+    sites,
+    usechars,
+    mode;
 
 // load connection
 var connection = chrome.extension.connect();
@@ -50,285 +50,112 @@ connection.onMessage.addListener(function(info) {
 });
 connection.postMessage();
 
-function isDisabledSite() {
-    for (var i = 0; i < sites.length; i++)
-        if (location.href.search(new RegExp(sites[i])) >= 0)
-            return true;
-    return false;
-}
-
-
-function click(target, ctrlKey, altKey, shiftKey, metaKey) {
-    var objects = ["INPUT", "TEXTAREA", "SELECT"];
-    if ($.inArray(target.tagName, objects) != -1) {
-        target.focus();
-    } else {
-        var evt = document.createEvent("MouseEvents");
-        evt.initMouseEvent("click", true, true, window,
-            0, 0, 0, 0, 0,
-            ctrlKey, altKey, shiftKey, metaKey, 0, null);
-        target.dispatchEvent(evt);
-    }
-}
-
-function isInArea(innerCR, outer) {
-    var inWindow = true;
-    var outerCR = {
-        width: window.innerWidth,
-        height: window.innerHeight
-    };
-    if (outer) {
-        outerCR = outer.getBoundingClientRect();
-        var newInnerCR = {
-            left: outerCR.left + innerCR.left,
-            top: outerCR.top + innerCR.top,
-            width: innerCR.width,
-            height: innerCR.height
-        };
-        inWindow = isInArea(newInnerCR);
-    }
-
-    var inFrame = (0 <= innerCR.left && innerCR.left <= outerCR.width &&
-        0 <= innerCR.top && innerCR.top <= outerCR.height);
-    return inWindow && inFrame;
-}
-
-function makeCenter(node) {
-    var cr = node.getBoundingClientRect();
-    window.scrollBy(cr.left - window.innerWidth / 2,
-        cr.top - window.innerHeight / 2);
-}
-
-function addClass(node, classname) {
-    var classes;
-    if (node.className === "") {
-        node.className = classname;
-        return true;
-    } else {
-        classes = node.className.split(" ");
-        if (classes.indexOf(classname) == -1) {
-            node.className += " " + classname;
-            return true;
-        } else {
-            return false;
-        }
-    }
-}
-
-function removeClass(node, classname) {
-    var classes = node.className.split(" "),
-        pos = classes.indexOf(classname);
-    if (pos != -1) {
-        var newclasses = classes.slice(0, pos).concat(classes.slice(pos + 1));
-        node.className = "";
-        for (var i = 0; i < newclasses.length; i++) {
-            node.className += newclasses[i] + " ";
-        }
-        return true;
-    }
-    return false;
-}
-
-var LinkSearchMode = function() {
-    var self = this;
-
-    this.allNodes = [];
-    this.candidateNodes = [];
-    this.selectedNodeIdx = undefined;
-    this.previousString = "";
-    this.panel = $("<div id='chrome_linksearchpanel' style='opacity:0'></div>");
-    this.input = $("<input id='chrome_linksearchinput' type='text'></input>");
-    this.panel.css("display", "none");
-    this.panel.append(this.input);
-    $("body").append(this.panel);
-    this.input.keyup(function(e) {
-        e.preventDefault();
+var navigate = {
+    start: function(e, hitahint, linksearch) {
+        var active = document.activeElement;
         if (e.keyCode == KEY.ESC) {
-            self.finish();
+            e.preventDefault();
+            active.blur();
+            if (mode)
+                mode.finish();
             return;
         }
-
-        if (self.previousString == this.value) {
+        if (["INPUT", "TEXTAREA"].indexOf(active.tagName) != -1 ||
+            mode || e.metaKey || e.ctrlKey)
             return;
-        }
-        self.previousString = this.value;
-        self.hideLinks();
-        self.candidateNodes = [];
 
-        var regexp = new RegExp(window.migemo.query(this.value), "i");
-        for (var i = 0; i < self.allNodes.length; i++) {
-            var node = self.allNodes[i];
-            if (node.innerText.search(regexp) != -1) {
-                self.candidateNodes.push(node);
-            }
-        }
-        if (self.candidateNodes.length > 0) {
-            self.input.css("backgroundColor", "white");
-
-            self.selectedNodeIdx = 0;
-            $(self.candidateNodes[0]).addClass("chrome_search_selected");
-            for (var j = 1; j < self.candidateNodes.length; j++) {
-                $(self.candidateNodes[j]).addClass("chrome_search_selected");
-            }
-        } else {
-            self.input.css("backgroundColor", "red");
-            self.selectedNodeIdx = undefined;
-        }
-    });
-    this.input.keydown(function(e) {
         switch (e.keyCode) {
-            case KEY.SEMICOLON:
-                if (self.selectedNodeIdx === undefined) {
+            case KEY.SLASH:
+            case KEY.PERIOD:
+                if (!search_enable || navigate.isDisabledSite())
                     return;
-                }
-                self.candidateNodes[self.selectedNodeIdx].focus();
-                self.finish();
                 e.preventDefault();
+                mode = linksearch;
+                linksearch.init();
                 break;
-            case KEY.ENTER:
-                if (self.selectedNodeIdx === undefined) {
+            case KEY.COMMA:
+                if (!hitahint_enable || navigate.isDisabledSite())
                     return;
-                }
-                click(self.candidateNodes[self.selectedNodeIdx],
-                    e.ctrlKey, e.altKey, e.shiftKey, e.metaKey);
-                self.finish();
                 e.preventDefault();
+                mode = hitahint;
+                hitahint.init();
                 break;
-            case KEY.G:
-                if (e.ctrlKey) {
-                    e.preventDefault();
-                    if (typeof self.selectedNodeIdx == "undefined") {
-                        return;
-                    }
-                    removeClass(self.candidateNodes[self.selectedNodeIdx],
-                        "chrome_search_selected");
-                    if (!e.shiftKey) {
-                        self.selectedNodeIdx += 1;
-                        self.selectedNodeIdx %= self.candidateNodes.length;
-                    } else {
-                        self.selectedNodeIdx -= 1;
-                        self.selectedNodeIdx += self.candidateNodes.length;
-                        self.selectedNodeIdx %= self.candidateNodes.length;
-                    }
-                    var new_target = self.candidateNodes[self.selectedNodeIdx];
-                    $(new_target).addClass("chrome_search_selected");
-                    //addClass(new_target, "chrome_search_selected");
-                    if (!isInArea(new_target.getBoundingClientRect())) {
-                        makeCenter(new_target);
-                    }
-                }
+
+            case KEY.J:
+                if (!other_enable || navigate.isDisabledSite())
+                    return;
+                window.scrollBy(0, scrollValue);
+                break;
+            case KEY.K:
+                if (!other_enable || navigate.isDisabledSite())
+                    return;
+                window.scrollBy(0, -scrollValue);
+                break;
+            case KEY.Z:
+                if (!other_enable || navigate.isDisabledSite())
+                    return;
+                history.back();
+                break;
+            case KEY.X:
+                if (!other_enable || navigate.isDisabledSite())
+                    return;
+                history.forward();
+                break;
+            default:
+                //      console.log(e.keyCode);
                 break;
         }
-    });
-
-    this.hideLinks = function() {
-        self.selectedNodeIdx = undefined;
-        self.input.css("backgroundColor", "white");
-        $(".chrome_search_candidate").removeClass("chrome_search_candidate");
-        $(".chrome_search_selected").removeClass("chrome_search_selected");
-    };
-
-    this.init = function() {
-        this.panel.css("display", "block");
-        this.panel.css("opacity", "0.9");
-        this.input[0].focus();
-
-        const targetSelector = "a[href]:visible";
-        this.allNodes = $.makeArray($(targetSelector));
-        for (var i = 0, frames = d.querySelectorAll("iframe"), len = frames.length; i < len; i++) {
-            this.allNodes = this.allNodes.concat($.makeArray($(targetSelector,
-                frames[i].contentDocument)));
+    },
+    isDisabledSite: function() {
+        for (var i = 0; i < sites.length; i++)
+            if (location.href.search(new RegExp(sites[i])) >= 0)
+                return true;
+        return false;
+    }
+};
+var baseMethod = {
+    click: function(target, ctrlKey, altKey, shiftKey, metaKey) {
+        var objects = ["INPUT", "TEXTAREA", "SELECT"];
+        if ($.inArray(target.tagName, objects) != -1) {
+            target.focus();
+        } else {
+            var evt = document.createEvent("MouseEvents");
+            evt.initMouseEvent("click", true, true, window,
+                0, 0, 0, 0, 0,
+                ctrlKey, altKey, shiftKey, metaKey, 0, null);
+            target.dispatchEvent(evt);
         }
-    };
-    this.finish = function() {
-        mode = undefined;
-        this.input[0].value = "";
-        this.input[0].blur();
-        this.panel.css("opacity", "0");
-        var tmp = this.panel;
-        //setTimeout(function() {
-        tmp.css("display", "none");
-        //}, 100);
-        this.hideLinks();
-    };
+    },
+    isInArea: function(innerCR, outer) {
+        var inWindow = true,
+            outerCR = {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+        if (outer) {
+            outerCR = outer.getBoundingClientRect();
+            var newInnerCR = {
+                left: outerCR.left + innerCR.left,
+                top: outerCR.top + innerCR.top,
+                width: innerCR.width,
+                height: innerCR.height
+            };
+            inWindow = this.isInArea(newInnerCR);
+        }
+        var inFrame = (0 <= innerCR.left && innerCR.left <= outerCR.width &&
+            0 <= innerCR.top && innerCR.top <= outerCR.height);
+        return inWindow && inFrame;
+    }
 };
 
-
-var hitahint;
-var linksearch;
 $(function() {
-    hitahint = new window.HitAHintMode();
-    linksearch = new LinkSearchMode();
-});
-
-var mode;
-
-
-function start(e) {
-    var active = document.activeElement;
-    if (e.keyCode == KEY.ESC) {
-        e.preventDefault();
-        active.blur();
-        if (mode)
-            mode.finish();
-        return;
-    }
-    if (["INPUT", "TEXTAREA"].indexOf(active.tagName) != -1 ||
-        mode || e.metaKey || e.ctrlKey)
-        return;
-
-    switch (e.keyCode) {
-        case KEY.SLASH:
-        case KEY.PERIOD:
-            if (!search_enable || isDisabledSite())
-                return;
-            e.preventDefault();
-            mode = linksearch;
-            linksearch.init();
-            break;
-        case KEY.COMMA:
-            if (!hitahint_enable || isDisabledSite())
-                return;
-            e.preventDefault();
-            mode = hitahint;
-            hitahint.init();
-            break;
-
-        case KEY.J:
-            if (!other_enable || isDisabledSite())
-                return;
-            window.scrollBy(0, scrollValue);
-            break;
-        case KEY.K:
-            if (!other_enable || isDisabledSite())
-                return;
-            window.scrollBy(0, -scrollValue);
-            break;
-        case KEY.Z:
-            if (!other_enable || isDisabledSite())
-                return;
-            history.back();
-            break;
-        case KEY.X:
-            if (!other_enable || isDisabledSite())
-                return;
-            history.forward();
-            break;
-        default:
-            //      console.log(e.keyCode);
-            break;
-    }
-}
-
-var frames = document.querySelectorAll("iframe, frame");
-var docs = [document].concat($.map(frames, function(f) {
-    return f.contentDocument;
-}));
-$.map(docs, function(d) {
-    d.addEventListener("keydown", start);
-});
-$.map(frames, function(f) {
-    f.addEventListener("load", function(e) {
-        e.target.contentDocument.addEventListener("keydown", start);
+    HitAHintMode.prototype = Object.create(baseMethod);
+    LinkSearchMode.prototype = Object.create(baseMethod);
+    var hitahint = new HitAHintMode(),
+        linksearch = new LinkSearchMode();
+    hitahint.render();
+    linksearch.render();
+    $(this).keydown(function(e) {
+        navigate.start(e, hitahint, linksearch);
     });
 });

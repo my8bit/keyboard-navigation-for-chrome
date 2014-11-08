@@ -4,7 +4,7 @@
    },
    "content_scripts": [{
       "css": ["navigate.css"],
-      "js": ["jquery.js", "migemoDict.js", "migemo.js", "navigate.js", "hitahintmode.js"],
+      "js": ["jquery-1.11.1.min/index.js", "migemoDict.js", "migemo.js", "navigate.js", "hitahintmode.js", "linksearchmode.js"],
       "matches": ["http://*/*", "https://*/*", "file://*/*"],
       "run_at": "document_start"
    }],

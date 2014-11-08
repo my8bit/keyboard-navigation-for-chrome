@@ -26,6 +26,18 @@ module.exports = function(grunt) {
                 'privateKey': 'key.pem'
             }
         },
+        bower: {
+            install: {
+                options: {
+                    targetDir: './src',
+                    install: true,
+                    verbose: true,
+                    cleanTargetDir: false,
+                    cleanBowerDir: false,
+                    bowerOptions: {}
+                }
+            }
+        },
         'http-server': {
             dev: {
                 root: 'test',
@@ -49,7 +61,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-crx');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-bower-installer');
     // 4. Where we tell Grunt what to do when we type "grunt" into the terminal.
-    grunt.registerTask('default', ['http-server', 'crx', 'selenium', 'mochaTest']);
+    grunt.registerTask('default', ['bower', 'http-server', 'crx', 'selenium', 'mochaTest']);
 
 };

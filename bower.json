@@ -1,0 +1,13 @@
+{
+  "name": "keyboard-navigation-for-chrome",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery-1.11.1.min": "http://code.jquery.com/jquery-1.11.1.min.js"
+  }
+}
