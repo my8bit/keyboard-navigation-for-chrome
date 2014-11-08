@@ -129,189 +129,6 @@ function removeClass(node, classname) {
     return false;
 }
 
-var HitAHintMode = function() {
-    var self = this,
-        panel = $("<div id='chrome_hitahintpanel' style='opacity:0'></div>"),
-        input = $("<input id='chrome_hitahintinput' type='text'></input>"),
-        div = $("<div></div>").attr("id", "chrome_hintswindow");
-
-    this.panel = panel;
-    this.input = input;
-
-    $("body").append(div);
-    $("body").append(panel);
-
-    //this.hintsdiv = div[0];
-
-    panel.css("display", "none");
-    panel.append(input);
-
-    this.candidateNodes = {};
-
-    input.keyup(function(e) {
-        e.preventDefault();
-        if (e.keyCode == KEY.ESC) {
-            self.finish();
-            return;
-        }
-
-        for (var hintkey in self.candidateNodes) {
-            var hint = $(self.candidateNodes[hintkey].hint);
-            if (this.value === "" || hintkey.indexOf(this.value) === 0) {
-                hint.removeClass("chrome_not_candidate");
-            } else {
-                hint.addClass("chrome_not_candidate");
-            }
-            /*
-            if (this.value === "" || hintkey.indexOf(this.value) === 0) {
-                //removeClass(hint, "chrome_not_candidate");
-            } else {
-                //addClass(hint, "chrome_not_candidate");
-            }
-            */
-        }
-        if (this.value === "" || self.candidateNodes[this.value]) {
-            input.css("backgroundColor", "white");
-        } else {
-            input.css("backgroundColor", "red");
-        }
-    });
-
-    input.keydown(function(e) {
-        if (e.keyCode == KEY.COMMA) {
-            e.preventDefault();
-            e.stopPropagation();
-            self.finish();
-            return;
-        }
-        var target;
-        if (e.keyCode == KEY.SEMICOLON && self.candidateNodes[this.value]) {
-            target = self.candidateNodes[this.value].node;
-            self.finish();
-            target.focus();
-            e.preventDefault();
-            return;
-        }
-        if (e.keyCode == KEY.ENTER && self.candidateNodes[this.value]) {
-            target = self.candidateNodes[this.value].node;
-            self.finish();
-            click(target, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey);
-            e.preventDefault();
-        }
-    });
-
-    this.showHint = function() {
-        const targetSelector = ["a[href]:visible",
-            "input[type!=hidden]:visible",
-            "textarea:visible",
-            "select:visible",
-            "img[onclick]:visible",
-            "button:visible"
-        ].join();
-
-        var frames = $("body").find("iframe, frame").map(function(idx, el) {
-                try {
-                    return $(el).contents();
-                } catch (error) {
-                    console.error(error);
-                }
-            }),
-            docs = [document].concat(frames),
-            self = this;
-
-        for (var idx = 0, j = 0; idx < docs.length; idx++) {
-            var allNodes = $.makeArray($(targetSelector, docs[idx]));
-            var frameOffset = (idx !== 0) ?
-                frames[idx - 1][0].body.getBoundingClientRect() : {
-                    top: 0,
-                    left: 0
-                };
-            var df = document.createDocumentFragment();
-
-            allNodes.forEach(showHints);
-            div.append(df);
-        }
-        /*
-        docs.forEach(function(el, idx) {
-            var allNodes = $(el).find(targetSelector),
-                frameOffset = (idx !== 0) ?
-                frames[idx - 1][0].body.getBoundingClientRect() : {
-                    top: 0,
-                    left: 0
-                },
-                df = document.createDocumentFragment();
-            allNodes.each(showHints);
-            div.append(df);
-        });
-*/
-        function showHints(hintedElement) {
-            var node = hintedElement,
-                cr = node.getBoundingClientRect();
-
-            if (node.id.indexOf("chrome_") !== 0 && isInArea(cr, frames[idx - 1])) {
-                var tag = self.num2string(j++),
-                    span = docs[idx].createElement("span");
-                span.innerText = tag;
-
-                var left = (window.pageXOffset + cr.left +
-                        (idx ? frameOffset.left - docs[idx].body.scrollLeft : 0)),
-                    top = (window.pageYOffset + cr.top +
-                        (idx ? frameOffset.top - docs[idx].body.scrollTop : 0));
-
-                span.style.left = "" + (left - 8) + "px";
-                span.style.top = "" + (top - 8) + "px";
-                span.className = "chrome_hint chrome_not_candidate";
-                df.appendChild(span);
-                self.candidateNodes[tag] = {
-                    "hint": span,
-                    "node": node
-                };
-            }
-        }
-        setTimeout(function() {
-            $("#chrome_hintswindow > *").removeClass("chrome_not_candidate");
-        }, 0);
-    };
-
-    this.hideHint = function() {
-        $("#chrome_hintswindow > *").css("opacity", "0");
-        setTimeout(function() {
-            $("#chrome_hintswindow").empty();
-        }, 200);
-    };
-
-    this.num2string = function(num) {
-        var n = usechars.length,
-            table = "0123456789abcdefghijklmnopqrstuvwxyz".slice(0, n),
-            tmp = num.toString(n),
-            result = "";
-        for (var i = 0; i < tmp.length; i++) {
-            result += usechars[table.indexOf(tmp[i])];
-        }
-        return result;
-    };
-
-    this.init = function() {
-        this.panel.css("display", "block");
-        this.panel.css("opacity", "0.9");
-        this.input.focus();
-        this.showHint();
-    };
-
-    this.finish = function() {
-        mode = undefined;
-        input[0].value = "";
-        input[0].blur();
-        document.body.focus();
-        panel.css("opacity", "0");
-        var tmp = panel;
-        setTimeout(function() {
-            tmp.css("display", "none");
-        }, 100);
-        this.hideHint();
-    };
-};
-
 var LinkSearchMode = function() {
     var self = this;
 
@@ -338,7 +155,7 @@ var LinkSearchMode = function() {
         self.hideLinks();
         self.candidateNodes = [];
 
-        var regexp = new RegExp(migemo.query(this.value), "i");
+        var regexp = new RegExp(window.migemo.query(this.value), "i");
         for (var i = 0; i < self.allNodes.length; i++) {
             var node = self.allNodes[i];
             if (node.innerText.search(regexp) != -1) {
@@ -429,9 +246,9 @@ var LinkSearchMode = function() {
         this.input[0].blur();
         this.panel.css("opacity", "0");
         var tmp = this.panel;
-        setTimeout(function() {
-            tmp.css("display", "none")
-        }, 100);
+        //setTimeout(function() {
+        tmp.css("display", "none");
+        //}, 100);
         this.hideLinks();
     };
 };
@@ -440,11 +257,11 @@ var LinkSearchMode = function() {
 var hitahint;
 var linksearch;
 $(function() {
-    hitahint = new HitAHintMode();
+    hitahint = new window.HitAHintMode();
     linksearch = new LinkSearchMode();
 });
 
-var mode = undefined;
+var mode;
 
 
 function start(e) {
@@ -456,12 +273,8 @@ function start(e) {
             mode.finish();
         return;
     }
-    if (["INPUT", "TEXTAREA"].indexOf(active.tagName) != -1)
-        return;
-
-    if (mode)
-        return;
-    if (e.metaKey || e.ctrlKey)
+    if (["INPUT", "TEXTAREA"].indexOf(active.tagName) != -1 ||
+        mode || e.metaKey || e.ctrlKey)
         return;
 
     switch (e.keyCode) {
@@ -507,8 +320,8 @@ function start(e) {
     }
 }
 
-var frames = d.querySelectorAll("iframe, frame");
-var docs = [d].concat($.map(frames, function(f) {
+var frames = document.querySelectorAll("iframe, frame");
+var docs = [document].concat($.map(frames, function(f) {
     return f.contentDocument;
 }));
 $.map(docs, function(d) {

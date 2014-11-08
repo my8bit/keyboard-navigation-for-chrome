@@ -1,0 +1,32 @@
+{
+  "name": "Keyboar-navigation-for-Chrome",
+  "version": "0.8.1",
+  "author": {
+    "name": "Ihor Pavlenko",
+    "email": "ihor@pavlenko.guru",
+    "url": "http://pavlenko.guru"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/my8bit/keyboard-navigation-for-chrome"
+  },
+  "engines": {
+    "node": ">= 0.10.0",
+    "npm": ">= 1.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "mocha": "~1.21.4",
+    "grunt-mocha-test": "~0.12.0",
+    "grunt-http-server": "~1.0.0",
+    "grunt-crx": "~0.3.3",
+    "webdriverio": "~2.3.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-selenium-simple": "~0.1.1",
+    "config": "~1.7.0"
+  },
+  "bundleDependencies": [],
+  "private": true,
+  "main": "app.js"
+}
