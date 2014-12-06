@@ -1,6 +1,9 @@
-var HitAHintMode = function() {
+exports.HitAHintMode = function() {
     var self = this,
-        body, div, panel, input;
+        counter,
+        body, div, panel, input,
+        KEY = require("./key.js"),
+        $ = require("./jquery-1.11.1.min/index.js");
 
     this.candidateNodes = {};
 
@@ -14,6 +17,9 @@ var HitAHintMode = function() {
         panel.append(input);
         body.append(div);
         body.append(panel);
+        this.panel = panel;
+        this.input = input;
+        this.addKeyIvents();
     };
 
     this.addKeyIvents = function() {
@@ -25,6 +31,7 @@ var HitAHintMode = function() {
         e.preventDefault();
         if (e.keyCode == KEY.ESC) {
             self.finish();
+            self.constructor.setMode(null);
             return;
         }
 
@@ -49,11 +56,13 @@ var HitAHintMode = function() {
             e.preventDefault();
             e.stopPropagation();
             self.finish();
+            self.constructor.setMode(null);
             return;
         }
         if (e.keyCode === KEY.SEMICOLON && self.candidateNodes[this.value]) {
             target = self.candidateNodes[this.value].node;
             self.finish();
+            self.constructor.setMode(null);
             target.focus();
             e.preventDefault();
             return;
@@ -61,6 +70,7 @@ var HitAHintMode = function() {
         if (e.keyCode === KEY.ENTER && self.candidateNodes[this.value]) {
             target = self.candidateNodes[this.value].node;
             self.finish();
+            self.constructor.setMode(null);
             self.click(target, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey);
             e.preventDefault();
         }
@@ -77,7 +87,7 @@ var HitAHintMode = function() {
 
         var frames = body.find("iframe, frame").map(function(idx, el) {
                 try {
-                    //?? idx
+                    //? idx
                     return $(el).contents();
                 } catch (error) {
                     console.warn(error);
@@ -85,30 +95,29 @@ var HitAHintMode = function() {
             }),
             docs = [document].concat(frames),
             frameOffset,
-            df,
-            counter = 0;
-
+            df;
+        counter = 0;
         docs.forEach(function(docEl, idx) {
             frameOffset = (idx !== 0 && frames[idx - 1] &&
-                frames[idx - 1][0].body) ?
+                    frames[idx - 1][0].body) ?
                 frames[idx - 1][0].body.getBoundingClientRect() : {
                     top: 0,
                     left: 0
-            };
+                };
             df = document.createDocumentFragment();
             //Get all elements for selector covert to array and iterate
             $(docEl)
                 .find(targetSelector)
                 .get()
                 .forEach(function(el) {
-                    self.createHints(el, counter, idx, frameOffset, df, docEl);
+                    self.createHints(el, idx, frameOffset, df, docEl);
                 });
             div.append(df);
         });
         $("#chrome_hintswindow > *").removeClass("chrome_not_candidate");
     };
 
-    this.createHints = function(hintedElement, counter, idx, frameOffset, df, docEl) {
+    this.createHints = function(hintedElement, idx, frameOffset, df, docEl) {
         var node = hintedElement,
             cr = node.getBoundingClientRect();
         if (node.id.indexOf("chrome_") !== 0 && self.isInArea(cr, frames[idx - 1])) {
@@ -138,6 +147,7 @@ var HitAHintMode = function() {
     };
 
     this.num2string = function(num) {
+        var usechars = "asdfjkl"; //TODO temp fix
         var n = usechars.length,
             table = "0123456789abcdefghijklmnopqrstuvwxyz".slice(0, n),
             tmp = (typeof num == "number") ? num.toString(n) : [],
@@ -149,31 +159,13 @@ var HitAHintMode = function() {
     };
 
     this.init = function() {
-        this.addKeyIvents();
         this.panelShow();
         input.focus();
         this.showHint();
     };
 
-    this.panelShow = function() {
-        panel.css("display", "block");
-        panel.css("opacity", "0.9");
-    };
-
-    this.panelHide = function() {
-        panel.css("opacity", "0");
-        panel.css("display", "none");
-    };
-
-    this.finish = function() {
-        mode = undefined;
-        input.val("");
-        input.blur();
-        body.focus();
-        this.panelHide();
+    this.hide = function() {
         this.hideHint();
     };
-};
 
-if (typeof module != "undefined" &&
-    module.exports) module.exports = HitAHintMode;
+};

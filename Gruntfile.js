@@ -1,5 +1,3 @@
-'use strict';
-
 var filename = require('./test/testHelper.js').getCrxName();
 
 module.exports = function(grunt) {
@@ -15,8 +13,8 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            files: ['**/*', '!**/node_modules/**'],
-            tasks: ['crx', 'mochaTest']
+            files: ['**/*', '!**/node_modules/**', '!src/app.js'],
+            tasks: ['browserify']
         },
         crx: {
             myPublicPackage: {
@@ -53,6 +51,17 @@ module.exports = function(grunt) {
                 jar: '/home/my8bit/selenium/selenium-server-standalone-2.43.1.jar'
             },
             your_target: {}
+        },
+        browserify: {
+            options: {
+                browserifyOptions: {
+                    debug: true
+                }
+            },
+            main: {
+                src: ['src/navigate.js'],
+                dest: 'src/app.js'
+            }
         }
     });
     // 3. Where we tell Grunt we plan to use this plug-in.
@@ -62,7 +71,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-crx');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-bower-installer');
+    grunt.loadNpmTasks('grunt-browserify');
     // 4. Where we tell Grunt what to do when we type "grunt" into the terminal.
-    grunt.registerTask('default', ['bower', 'http-server', 'crx', 'selenium', 'mochaTest']);
-
+    grunt.registerTask('default', ['bower', 'browserify', 'http-server', 'crx', 'selenium', 'mochaTest']);
 };

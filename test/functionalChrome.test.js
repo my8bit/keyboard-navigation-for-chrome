@@ -15,7 +15,8 @@ describe("Hit a hint mode and link search mode", function() {
         "F9": "\uE039",
         "F10": "\uE03A",
         "a": "\u0061",
-        "Enter": "\uE007"
+        "Enter": "\uE007",
+        "ESC": "\uE00C"
     };
 
     beforeEach(function(done) {
@@ -72,7 +73,7 @@ describe("Hit a hint mode and link search mode", function() {
             .call(done);
     });
 
-    it("Should get 3 hints and 1 input and then hide it", function(done) {
+    it("Should get 3 hints and 1 input and then hide it and show ot again", function(done) {
         client
             .url("http://localhost:8765/index.html")
             .keys(KEYS.F8, function() {})
@@ -92,10 +93,17 @@ describe("Hit a hint mode and link search mode", function() {
             .isVisible("#chrome_hitahintinput", function(err, isVisible) {
                 assert(isVisible === false);
             })
+            .keys(KEYS.F8, function() {})
+            .elements(".chrome_hint", function(err, res) {
+                assert(res.value.length === 3, "There are three hints on link");
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
+            })
             .call(done);
     });
 
-    it("Should get 1 hint and 1 input and then hide it", function(done) {
+    it("Should get 1 hint and 1 input and then hide it and swow it again. Press HintAHint button", function(done) {
         client
             .url("http://localhost:8765/index.html")
             .scroll("#doge2")
@@ -116,9 +124,98 @@ describe("Hit a hint mode and link search mode", function() {
             .isVisible("#chrome_hitahintinput", function(err, isVisible) {
                 assert(isVisible === false);
             })
+            .keys(KEYS.F8, function() {})
+            .elements(".chrome_hint", function(err, res) {
+                assert(res.value.length === 1, "There are three hints on link");
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
+            })
+            .call(done);
+    });
+    it("Should get 1 hint and 1 input and then hide it and swow it again. Press ESC button", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .scroll("#doge2")
+            .keys(KEYS.F8, function() {})
+            .elements(".chrome_hint", function(err, res) {
+                assert(res.value.length === 1, "There are three hints on link");
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
+            })
+            .keys(KEYS.ESC, function() {})
+            .isExisting(".chrome_hint", function(err, isExisting) {
+                assert(isExisting === false);
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true);
+            })
+            .isVisible("#chrome_hitahintinput", function(err, isVisible) {
+                assert(isVisible === false);
+            })
+            .keys(KEYS.F8, function() {})
+            .elements(".chrome_hint", function(err, res) {
+                assert(res.value.length === 1, "There are three hints on link");
+            })
+            .isExisting("#chrome_hitahintinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
+            })
             .call(done);
     });
 
+
+    it("Should get 1 link search input and then hide it and swow it again. Press ESC button", function(done) {
+        client
+            .url("http://localhost:8765/index.html")
+            .scroll("#doge2")
+            .keys(KEYS.F10, function() {})
+            .isExisting("#chrome_linksearchinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one link search input");
+            })
+            .keys(KEYS.ESC, function() {})
+            .isExisting("#chrome_linksearchinput", function(err, isExisting) {
+                assert(isExisting === true);
+            })
+            .isVisible("#chrome_linksearchinput", function(err, isVisible) {
+                assert(isVisible === false);
+            })
+            .keys(KEYS.F10, function() {})
+            .isExisting("#chrome_linksearchinput", function(err, isExisting) {
+                assert(isExisting === true, "There are one hintinput");
+            })
+            .isVisible("#chrome_linksearchinput", function(err, isVisible) {
+                assert(isVisible === true);
+            })
+            .call(done);
+    });
+    /*
+        it("Should get 1 link search input and then hide it and swow it again. LinkSearch button", function(done) {
+            client
+                .url("http://localhost:8765/index.html")
+                .scroll("#doge2")
+                .keys(KEYS.F10, function() {})
+                .isExisting("#chrome_linksearchinput", function(err, isExisting) {
+                    assert(isExisting === true, "There are one hintinput");
+                })
+                .keys(KEYS.F10, function() {})
+                .isExisting("#chrome_linksearchinput", function(err, isExisting) {
+                    assert(isExisting === true);
+                })
+                .isVisible("#chrome_linksearchinput", function(err, isVisible) {
+                    assert(isVisible === false, "Linksearch is visible");
+                })
+                .keys(KEYS.F10, function() {})
+                .isExisting("#chrome_linksearchinput", function(err, isExisting) {
+                    assert(isExisting === true, "There are one hintinput");
+                })
+                .isVisible("#chrome_linksearchinput", function(err, isVisible) {
+                    assert(isVisible === true);
+                })
+                .call(done);
+        });
+
+    */
     it("Should follow the scroll hit link", function(done) {
         client
             .url("http://localhost:8765/index.html")
@@ -204,6 +301,11 @@ describe("Hit a hint mode and link search mode", function() {
     });
 
     afterEach(function(done) {
+        var log = function(err, res) {
+            assert(err === null, "Something wrong in console");
+            if (res.value.length) console.log(res.value);
+        };
+        client.log("browser", log);
         client.end(done);
     });
 });

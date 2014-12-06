@@ -1,4 +1,8 @@
 node_modules
+bower_components
+src/app.js
+dist/*
+src/jquery*
 key.pem
 *project*
 *workspace*

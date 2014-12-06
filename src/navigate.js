@@ -2,42 +2,14 @@
 // start link searching within visible area
 
 const scrollValue = 30;
-const KEY = {
-    NUM1: 49,
-    NUM2: 50,
-    NUM3: 51,
-    NUM4: 52,
-    NUM5: 53,
-    NUM6: 54,
-    NUM7: 55,
-    NUM8: 56,
-    NUM9: 57,
-    ENTER: 13,
-    LEFT: 37,
-    UP: 38,
-    RIGHT: 39,
-    DOWN: 40,
-    CONTROL: 17,
-    G: 71,
-    J: 74,
-    K: 75,
-    H: 72,
-    L: 76,
-    ESC: 27,
-    Z: 90,
-    X: 88,
-    SEMICOLON: 186,
-    COMMA: 119, //F8
-    PERIOD: 120, //F9
-    SLASH: 121, //F10
-};
+
+var KEY = require("./key.js");
 
 var search_enable,
     hitahint_enable,
     other_enable,
     sites,
-    usechars,
-    mode;
+    usechars;
 
 // load connection
 var connection = chrome.extension.connect();
@@ -45,23 +17,26 @@ connection.onMessage.addListener(function(info) {
     search_enable = info.search == "false" ? false : true;
     hitahint_enable = info.hitahint == "false" ? false : true;
     other_enable = info.other == "false" ? false : true;
-    usechars = info.hitahintkeys || "asdfjkl";
+    //usechars = info.hitahintkeys || "asdfjkl"; //Fix: hardcoded on hitahint mode
     sites = (info.sites || "").split(",").slice(0, -1);
 });
 connection.postMessage();
 
 var navigate = {
     start: function(e, hitahint, linksearch) {
-        var active = document.activeElement;
-        if (e.keyCode == KEY.ESC) {
+        var active = document.activeElement,
+            baseMethod = require("./basemethod.js");
+        if (e.keyCode === KEY.ESC) {
             e.preventDefault();
             active.blur();
-            if (mode)
-                mode.finish();
+            if (baseMethod.getMode()) {
+                baseMethod.getMode().finish();
+                baseMethod.setMode(null);
+            }
             return;
         }
         if (["INPUT", "TEXTAREA"].indexOf(active.tagName) != -1 ||
-            mode || e.metaKey || e.ctrlKey)
+            baseMethod.getMode() || e.metaKey || e.ctrlKey)
             return;
 
         switch (e.keyCode) {
@@ -70,17 +45,19 @@ var navigate = {
                 if (!search_enable || navigate.isDisabledSite())
                     return;
                 e.preventDefault();
-                mode = linksearch;
+                baseMethod.setMode(linksearch);
                 linksearch.init();
                 break;
             case KEY.COMMA:
                 if (!hitahint_enable || navigate.isDisabledSite())
                     return;
                 e.preventDefault();
-                mode = hitahint;
+                baseMethod.setMode(hitahint);
                 hitahint.init();
                 break;
-
+                /*
+                 * Disable due settings refactoring
+                 *
             case KEY.J:
                 if (!other_enable || navigate.isDisabledSite())
                     return;
@@ -101,6 +78,7 @@ var navigate = {
                     return;
                 history.forward();
                 break;
+                */
             default:
                 //      console.log(e.keyCode);
                 break;
@@ -113,46 +91,19 @@ var navigate = {
         return false;
     }
 };
-var baseMethod = {
-    click: function(target, ctrlKey, altKey, shiftKey, metaKey) {
-        var objects = ["INPUT", "TEXTAREA", "SELECT"];
-        if ($.inArray(target.tagName, objects) != -1) {
-            target.focus();
-        } else {
-            var evt = document.createEvent("MouseEvents");
-            evt.initMouseEvent("click", true, true, window,
-                0, 0, 0, 0, 0,
-                ctrlKey, altKey, shiftKey, metaKey, 0, null);
-            target.dispatchEvent(evt);
-        }
-    },
-    isInArea: function(innerCR, outer) {
-        var inWindow = true,
-            outerCR = {
-                width: window.innerWidth,
-                height: window.innerHeight
-            };
-        if (outer) {
-            outerCR = outer.getBoundingClientRect();
-            var newInnerCR = {
-                left: outerCR.left + innerCR.left,
-                top: outerCR.top + innerCR.top,
-                width: innerCR.width,
-                height: innerCR.height
-            };
-            inWindow = this.isInArea(newInnerCR);
-        }
-        var inFrame = (0 <= innerCR.left && innerCR.left <= outerCR.width &&
-            0 <= innerCR.top && innerCR.top <= outerCR.height);
-        return inWindow && inFrame;
-    }
-};
-
+var $ = require("./jquery-1.11.1.min/index.js");
 $(function() {
+    var HitAHintMode = require("./hitahintmode.js").HitAHintMode,
+        LinkSearchMode = require("./linksearchmode.js").LinkSearchMode,
+        baseMethod = require("./basemethod.js"),
+        hitahint,
+        linksearch;
     HitAHintMode.prototype = Object.create(baseMethod);
     LinkSearchMode.prototype = Object.create(baseMethod);
-    var hitahint = new HitAHintMode(),
-        linksearch = new LinkSearchMode();
+    HitAHintMode.prototype.constructor = baseMethod;
+    LinkSearchMode.prototype.constructor = baseMethod;
+    hitahint = new HitAHintMode();
+    linksearch = new LinkSearchMode();
     hitahint.render();
     linksearch.render();
     $(this).keydown(function(e) {
