@@ -24,7 +24,8 @@ module.exports = function(grunt) {
             myPublicPackage: {
                 'filename': filename + '.crx',
                 'src': 'src/**/*',
-                'dest': 'dist/'
+                'dest': 'dist/',
+                'privateKey': '~./ssh/ida_rsa'
             }
         },
         bower: {
