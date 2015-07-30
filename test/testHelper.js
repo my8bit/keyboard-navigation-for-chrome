@@ -1,14 +1,16 @@
 "use strict";
 
-var fs = require("fs");
+var fs = require("fs"),
+	path = require("path");
 
 module.exports = {
     getDecodedCrx: function() {
         var name = this.getCrxName();
-        return fs.readFileSync("dist/" + name + ".crx").toString("base64");
+        return fs.readFileSync(path.resolve(__dirname, "../dist/" + name + ".crx")).toString("base64");
     },
     getCrxName: function() {
-        var manifest = fs.readFileSync("src/manifest.json");
-        return JSON.parse(manifest.toString().replace(/^\ufeff/g, "")).name;
+    	var file = fs.readFileSync(path.resolve(__dirname, "../src/manifest.json")),
+    		manifest = JSON.parse(file.toString().replace(/^\ufeff/g, ""));
+        return manifest.name + "-" + manifest.version;
     }
 };

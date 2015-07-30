@@ -1,6 +1,8 @@
 'use strict';
 
-var filename = require('./test/testHelper.js').getCrxName();
+var filename = require('./test/testHelper.js').getCrxName(),
+    jar = require('selenium-server-standalone-jar');
+
 
 module.exports = function(grunt) {
     grunt.initConfig({
@@ -21,7 +23,7 @@ module.exports = function(grunt) {
         crx: {
             myPublicPackage: {
                 'filename': filename + '.crx',
-                'src': 'src/',
+                'src': 'src/**/*',
                 'dest': 'dist/',
                 'privateKey': 'key.pem'
             }
@@ -50,7 +52,7 @@ module.exports = function(grunt) {
         },
         selenium: {
             options: {
-                jar: '/home/my8bit/selenium/selenium-server-standalone-2.43.1.jar'
+                jar: jar.path
             },
             your_target: {}
         }
