@@ -25,7 +25,7 @@ module.exports = function(grunt) {
                 'filename': filename + '.crx',
                 'src': 'src/**/*',
                 'dest': 'dist/',
-                'privateKey': '~./ssh/key.pem'
+                'privateKey': '~/key.pem'
             }
         },
         bower: {
