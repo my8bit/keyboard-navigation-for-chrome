@@ -24,8 +24,7 @@ module.exports = function(grunt) {
             myPublicPackage: {
                 'filename': filename + '.crx',
                 'src': 'src/**/*',
-                'dest': 'dist/',
-                'privateKey': '~/key.pem'
+                'dest': 'dist/'
             }
         },
         bower: {
