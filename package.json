@@ -2,10 +2,14 @@
   "name": "Keyboard-navigation-for-Chrome",
   "version": "0.8.1",
   "author": {
+    "name": "shimomura",
+    "url": "https://github.com/shimomura1004"
+  },
+  "contributors": [{
     "name": "Ihor Pavlenko",
     "email": "ihor@pavlenko.guru",
     "url": "http://pavlenko.guru"
-  },
+  }],
   "repository": {
     "type": "git",
     "url": "https://github.com/my8bit/keyboard-navigation-for-chrome"
