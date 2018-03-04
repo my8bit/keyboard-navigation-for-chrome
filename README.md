@@ -1,10 +1,10 @@
 ### keyboard-navigation-for-chrome
 This is a chrome extension that enables you to control your chrome browser without using mouse.
 
-#####TODO
+### TODO
 
 - [ ] fix issue with hiding inputfield when pressing ```Ж```
 - [ ] fix bower installing dependency with ```jquery```
 
-[ ![Codeship Status for my8bit/coinbot](https://codeship.io/projects/7f39f8c0-1873-0133-bdf5-16d44fc5418d/status)](https://codeship.io/projects/93903)
+[ ![Codeship Status for my8bit/keyboard-navigation-for-chrome](https://app.codeship.com/projects/73383740-0230-0136-46ac-4ef38d9281bc/status?branch=master)](https://app.codeship.com/projects/280048)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
