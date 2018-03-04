@@ -27,8 +27,8 @@ const KEY = {
     Z: 90,
     X: 88,
     SEMICOLON: 186,
-    COMMA: 119, //F8
-    PERIOD: 120, //F9
+    COMMA: 188, //  Shift + <
+    PERIOD: 190, // Shift + >
     SLASH: 121, //F10
 };
 
@@ -61,7 +61,7 @@ var navigate = {
             return;
         }
         if (["INPUT", "TEXTAREA"].indexOf(active.tagName) != -1 ||
-            mode || e.metaKey || e.ctrlKey)
+            mode || e.metaKey || e.ctrlKey || !e.shiftKey)
             return;
 
         switch (e.keyCode) {

@@ -20,7 +20,7 @@
     position: fixed;
     z-index: 2147483647;
     border-radius: 6px;
-    -webkit-transition: opacity 0.1s linear;
+    transition: opacity 0.1s linear;
 }
 #chrome_hitahintinput {
     outline:0px none black;
@@ -34,7 +34,7 @@
     position: fixed;
     z-index: 2147483647;
     border-radius: 6px;
-    -webkit-transition: opacity 0.1s linear;
+    transition: opacity 0.1s linear;
 }
 #chrome_linksearchinput {
     outline:0px none black;

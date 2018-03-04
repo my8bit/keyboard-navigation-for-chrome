@@ -5,11 +5,13 @@
     "name": "shimomura",
     "url": "https://github.com/shimomura1004"
   },
-  "contributors": [{
-    "name": "Ihor Pavlenko",
-    "email": "ihor@pavlenko.guru",
-    "url": "http://pavlenko.guru"
-  }],
+  "contributors": [
+    {
+      "name": "Ihor Pavlenko",
+      "email": "ihor@pavlenko.guru",
+      "url": "http://pavlenko.guru"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/my8bit/keyboard-navigation-for-chrome"
@@ -26,7 +28,7 @@
     "grunt-bower-installer": "~0.3.6",
     "grunt-cli": "*",
     "grunt-contrib-watch": "~0.6.1",
-    "grunt-crx": "1.0.3",
+    "grunt-crx": "^1.0.5",
     "grunt-http-server": "~1.0.0",
     "grunt-mocha-test": "~0.12.0",
     "grunt-selenium-simple": "~0.1.1",

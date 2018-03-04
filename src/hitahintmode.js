@@ -101,6 +101,7 @@ var HitAHintMode = function() {
                 .find(targetSelector)
                 .get()
                 .forEach(function(el) {
+                    counter++;
                     self.createHints(el, counter, idx, frameOffset, df, docEl);
                 });
             div.append(df);
@@ -112,7 +113,7 @@ var HitAHintMode = function() {
         var node = hintedElement,
             cr = node.getBoundingClientRect();
         if (node.id.indexOf("chrome_") !== 0 && self.isInArea(cr, frames[idx - 1])) {
-            var tag = self.num2string(counter++),
+            var tag = self.num2string(counter),
                 span = docEl.createElement("span");
             span.innerText = tag;
 
